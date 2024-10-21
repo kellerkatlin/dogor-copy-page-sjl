@@ -42,11 +42,11 @@ export default function DocumentFound({ params }: { params: { id: string } }) {
     }, [params.id]);
 
     if (loading) {
-        return <div>Cargando documento...</div>;
+        return;
     }
 
     if (!document) {
-        return <div>Documento no encontrado</div>;
+        return;
     }
 
     function formatDate(dateInput: string | Date) {

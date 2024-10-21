@@ -5,20 +5,49 @@ import React, { useEffect, useState } from "react";
 export default function DocumentFound({ params }: { params: { id: string } }) {
     const [document, setDocument] = useState<Document | null>(null);
 
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         const fetchDocument = async () => {
+            // Intenta obtener el documento desde localStorage
+            const storedDocument = localStorage.getItem(
+                `document-${params.id}`
+            );
+            if (storedDocument) {
+                setDocument(JSON.parse(storedDocument));
+                setLoading(false); // Carga desde localStorage
+                return; // Salir si se encontró en localStorage
+            }
+
+            // Si no está en localStorage, llama a la API
             try {
                 const response = await fetch(`/api/documents/${params.id}`);
+                if (!response.ok) {
+                    throw new Error("Error al cargar el documento");
+                }
                 const data = await response.json();
                 setDocument(data.document);
+                localStorage.setItem(
+                    `document-${params.id}`,
+                    JSON.stringify(data.document) // Guarda en localStorage
+                );
             } catch (error) {
                 console.error(error);
+            } finally {
+                setLoading(false); // Asegúrate de que loading se establezca en false al final
             }
         };
+
         fetchDocument();
     }, [params.id]);
 
-    console.log(document);
+    if (loading) {
+        return <div>Cargando documento...</div>;
+    }
+
+    if (!document) {
+        return <div>Documento no encontrado</div>;
+    }
 
     function formatDate(dateInput: string | Date) {
         const date = new Date(dateInput);
